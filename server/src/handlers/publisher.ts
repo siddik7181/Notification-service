@@ -1,7 +1,7 @@
 import Job from "../types/job";
 import amqp from 'amqplib';
 
-const RABBITMQ_URL = 'amqp://localhost';
+const RABBITMQ_URL = 'amqp://localhost:5672';
 
 export const sendToQueue  = async (queueName: string, message: Job) => {
     const connection = await amqp.connect(RABBITMQ_URL);

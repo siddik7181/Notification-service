@@ -1,6 +1,8 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import Job from "../types/job";
 import Circuit, { CircuitError } from "../utils/breaker";
+import { sendToQueue } from "./publisher";
+import QUEUE from ".";
 
 
 export const broker = async (type: string, job: Job) => {
@@ -13,6 +15,7 @@ export const broker = async (type: string, job: Job) => {
 
     const startPort: number = type === "sms" ? 8070 : 8090;
     const requests: AxiosRequestConfig[] = [];
+    const QUEUE_NAME: string = type === "sms" ? QUEUE.SMS_QUEUE : QUEUE.MAIL_QUEUE;
 
     [1,2,3].forEach(inc => {
         let request: AxiosRequestConfig = {
@@ -26,12 +29,44 @@ export const broker = async (type: string, job: Job) => {
 
     const shouldRetry: boolean = await handleRequests(requests);
 
-    if (shouldRetry) {
-        console.log(`[Broker]: You should retry this job with id: ${job.id}`);
+    if (!shouldRetry) {
+        console.log(`[Broker]: ${job.id}: Your Job Processed, waiting for new jobs..`);
+        return;
+    }
+    
+    console.log(`Retry left: ${job.options.maxRetry}`)
+
+    
+    if (job.options.maxRetry > 0) {
+        console.log('Job Can Be retryed!');
+        job.options.maxRetry -= 1;
+        job.options.attempts += 1;
+        
+        
+        // add to the same queue again. in some time.
+        const delayInMs = calculateExponentialJitter(
+            job.options.baseDelay,
+            job.options.jitterFactor,
+            job.options.attempts
+        );
+        setTimeout(async () => {
+            await sendToQueue(QUEUE_NAME, job);
+        }, delayInMs);
+        
     }else {
-        console.log(`[Broker]: ${job.id}: Your Job Processed, waiting for new jobs..`)
+        console.log(`[${job.id}]: Can't process now, sending to DLQ`);
+        // add to the DQL queue again.
+        await sendToQueue(QUEUE.DEAD_LETTER_QUEUE, job);
     }
 }
+
+const calculateExponentialJitter = (baseDelay: number, jitterFactor: number, attempt: number): number => {
+    const MAX_DELAY = 20000; // 20sec.
+    const exponentialDelay = baseDelay * Math.pow(2, attempt);
+    const randomFactor = Math.random();
+    return Math.min(exponentialDelay + Math.floor(randomFactor * jitterFactor), MAX_DELAY);
+};
+
 
 const handleRequests = async (requests: AxiosRequestConfig[]): Promise<boolean> => {
     let isRetryAble = false;
