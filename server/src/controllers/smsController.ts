@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import Sms from '../types/sms';
-import * as smsService from '../servies/smsService'
+import * as smsService from '../services/smsService'
 
 
 export const sendSms = async(req: Request, res: Response) => {
     try {
-        const mail: Sms = req.body;
-        await smsService.sendSms(mail);
+        const sms: Sms = req.body;
+        await smsService.sendSms(sms);
         res.send('Sms Sended');
         return;
     } catch (error) {

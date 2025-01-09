@@ -1,30 +1,16 @@
 import Job from "../types/job";
-import Mail from "../types/mail";
-import Sms from "../types/sms";
+import amqp from 'amqplib';
 
-import { v4 as uuidv4 } from 'uuid';
+const RABBITMQ_URL = 'amqp://localhost';
 
-export const mailQueue: Job[] = [];
-export const smsQueue: Job[] = [];
-
-export const publishMail = async(mail: Mail) => {
-    const job: Job = {
-        id: uuidv4(),
-        data: mail
-    }
-    mailQueue.push(job);
-}
-export const publishSms = async(sms: Sms) => {
-    const job: Job = {
-        id: uuidv4(),
-        data: sms
-    }
-    smsQueue.push(job);
-}
-
-export const mailQueueStatus = async() => {
-    return mailQueue.length;
-}
-export const smsQueueStatus = async() => {
-    return smsQueue.length;
+export const sendToQueue  = async (queueName: string, message: Job) => {
+    const connection = await amqp.connect(RABBITMQ_URL);
+    const channel = await connection.createChannel();
+  
+    await channel.assertQueue(queueName, { durable: true });
+    channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), { persistent: true });
+  
+    console.log(`[Publisher]: Job sent to ${queueName}:`, message);
+    await channel.close();
+    await connection.close();
 }
