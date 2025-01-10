@@ -1,0 +1,43 @@
+services:
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - notify
+
+  notify-provider:
+    build:
+      context: ./provider
+      dockerfile: Dockerfile
+    container_name: notify-provider
+    ports:
+      - "8071:8071"
+      - "8072:8072"
+      - "8073:8073"
+    networks:
+      - notify
+
+  notify-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: notify-server
+    ports:
+      - "8080:8080"
+    depends_on:
+      - rabbitmq  
+      - notify-provider
+    networks:
+      - notify
+
+networks:
+  notify:
+    driver: bridge
+
+volumes:
+  rabbitmq-data:

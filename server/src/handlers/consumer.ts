@@ -4,7 +4,7 @@ import Job from "../types/job";
 import QUEUE from ".";
 import { broker } from './broker';
 
-const RABBITMQ_URL = 'amqp://localhost:5672';
+const RABBITMQ_URL = 'amqp://rabbitmq:5672';
 
 
 const consume = async (queueName: string) => {

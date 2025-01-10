@@ -19,7 +19,7 @@ export const broker = async (type: string, job: Job) => {
 
     [1,2,3].forEach(inc => {
         let request: AxiosRequestConfig = {
-            baseURL: `http://localhost:${startPort + inc}/api/${type}`,
+            baseURL: `http://notify-provider:${startPort + inc}/api/${type}`,
             url: `/provider${inc}`,
             method: 'post',
             data: job.data
