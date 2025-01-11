@@ -13,7 +13,7 @@ const port = process.env.PORT || 8080;
 app.use(cors())
 app.use(express.json());
 
-app.use('/send', router);
+app.use('/api', router);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Express + TypeScript Server');
