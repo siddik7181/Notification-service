@@ -1,8 +1,9 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { AxiosRequestConfig } from "axios";
 import Job from "../types/job";
-import Circuit, { CircuitError } from "../utils/breaker";
 import { sendToQueue } from "./publisher";
 import QUEUE from ".";
+import { calcDelay, handleRequests } from "../utils/helper";
+import  RequestResponse from "../types/response";
 
 
 export const broker = async (type: string, job: Job) => {
@@ -14,78 +15,50 @@ export const broker = async (type: string, job: Job) => {
     console.log(`[Broker]: Type -> ${type}`)
 
     const startPort: number = type === "sms" ? 8070 : 8090;
-    const requests: AxiosRequestConfig[] = [];
     const QUEUE_NAME: string = type === "sms" ? QUEUE.SMS_QUEUE : QUEUE.MAIL_QUEUE;
 
-    [1,2,3].forEach(inc => {
-        let request: AxiosRequestConfig = {
-            baseURL: `http://notify-provider:${startPort + inc}/api/${type}`,
-            url: `/provider${inc}`,
-            method: 'post',
-            data: job.data
+    const request: AxiosRequestConfig = {
+        baseURL: `http://notify-provider:${startPort + job.providerNumber + 1}/api/${type}`,
+        url: `/provider${job.providerNumber + 1}`,
+        method: 'post',
+        data: job.data
+    }
+
+    job.jobStatus = 'Running';
+    const { isRetryAble, isClientError }: RequestResponse = await handleRequests(request);
+    job.attempts += 1;
+
+    if (!isRetryAble) {
+        if (isClientError) {
+            job.jobStatus = "ClientError";
+        }else {
+            job.jobStatus = "Passed"
         }
-        requests.push(request);
-    });
-
-    const shouldRetry: boolean = await handleRequests(requests);
-
-    if (!shouldRetry) {
         console.log(`[Broker]: ${job.id}: Your Job Processed, waiting for new jobs..`);
         return;
     }
-    
-    console.log(`Retry left: ${job.options.maxRetry}`)
 
-    
-    if (job.options.maxRetry > 0) {
-        console.log('Job Can Be retryed!');
-        job.options.maxRetry -= 1;
-        job.options.attempts += 1;
-        
-        
-        // add to the same queue again. in some time.
-        const delayInMs = calculateExponentialJitter(
-            job.options.baseDelay,
-            job.options.jitterFactor,
-            job.options.attempts
-        );
-        setTimeout(async () => {
-            await sendToQueue(QUEUE_NAME, job);
-        }, delayInMs);
-        
-    }else {
-        console.log(`[${job.id}]: Can't process now, sending to DLQ`);
+    if (job.attempts >= job.maxRetries) {
+        job.jobStatus = 'ServerError';
+        console.log(`[Broker]: ${job.id} failed even after retrying...`);
         // add to the DQL queue again.
         await sendToQueue(QUEUE.DEAD_LETTER_QUEUE, job);
+        return;
     }
+    
+    job.jobStatus = 'InQueue';
+    console.log(`Retry left: ${job.maxRetries - job.attempts}...`)
+    console.log('Job Can Be retryed!');
+
+    // change the providernumber..!!!
+    job.providerNumber = (job.providerNumber + 1) % 3;
+    
+    // add to the same queue again. in some time.
+    const delayInMs: number = calcDelay(job.baseDelay, job.attempts, job.maxDelay, job.jitter);
+    job.currentDelay = delayInMs;
+
+    setTimeout(async () => {
+        await sendToQueue(QUEUE_NAME, job);
+    }, delayInMs);
+    
 }
-
-const calculateExponentialJitter = (baseDelay: number, jitterFactor: number, attempt: number): number => {
-    const MAX_DELAY = 20000; // 20sec.
-    const exponentialDelay = baseDelay * Math.pow(2, attempt);
-    const randomFactor = Math.random();
-    return Math.min(exponentialDelay + Math.floor(randomFactor * jitterFactor), MAX_DELAY);
-};
-
-
-const handleRequests = async (requests: AxiosRequestConfig[]): Promise<boolean> => {
-    let isRetryAble = false;
-
-    for (const request of requests) {
-        console.log(`Processing with ${request.baseURL}${request.url}..`);
-        const circuit = new Circuit(request);
-        try {
-            await circuit.fire();
-            console.log(`${request.baseURL}${request.url} has processed`);
-            return false;
-        } catch (e) {
-            const error = (e as CircuitError);
-            isRetryAble = error.isRetryAble;
-            console.log(`[Handling Requests Error]: ${error.message}`)
-        }
-    }
-
-    return isRetryAble;
-
-}
-

@@ -3,28 +3,20 @@ import { sendToQueue } from "../handlers/publisher";
 import Sms from "../types/sms";
 import Job from "../types/job";
 import { v4 as uuidv4 } from 'uuid';
-import RetryOptions from "../types/retry";
 
-export const sendSms = async (sms: Sms, retryOptions?: RetryOptions) => {
-
-  if (!retryOptions) {
-    retryOptions = {
-      maxRetry: 3,
-      baseDelay: 500,
-      jitterFactor: 0.5,
-      attempts: 0
-    }
-  }
+export const sendSms = async (sms: Sms) => {
 
   const job: Job = {
     id: uuidv4(),
     data: sms,
-    options: {
-      maxRetry: retryOptions.maxRetry,
-      baseDelay: retryOptions.baseDelay,
-      jitterFactor: retryOptions.jitterFactor,
-      attempts: retryOptions.attempts
-    }
+    providerNumber: 0, // 0, 1, 2, good for module by 3.
+    baseDelay: 1000,
+    maxDelay: 30000,
+    currentDelay: 1000,
+    maxRetries: 5,
+    attempts: 0,
+    jitter: 0.25,
+    jobStatus: 'InQueue'
   }
 
   await sendToQueue(QUEUE.SMS_QUEUE, job);

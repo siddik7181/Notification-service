@@ -3,28 +3,20 @@ import Mail from "../types/mail";
 import Job from "../types/job";
 import { v4 as uuidv4 } from 'uuid';
 import QUEUE from "../handlers";
-import RetryOptions from "../types/retry";
 
-export const sendMail = async (mail: Mail, retryOptions?: RetryOptions) => {
-
-  if (!retryOptions) {
-    retryOptions = {
-      maxRetry: 3,
-      baseDelay: 500,
-      jitterFactor: 0.5,
-      attempts: 0
-    }
-  }
+export const sendMail = async (mail: Mail) => {
 
   const job: Job = {
     id: uuidv4(),
     data: mail,
-    options: {
-      maxRetry: retryOptions.maxRetry,
-      baseDelay: retryOptions.baseDelay,
-      jitterFactor: retryOptions.jitterFactor,
-      attempts: retryOptions.attempts
-    }
+    providerNumber: 0, // 0, 1, 2, good for module by 3.
+    baseDelay: 1000,
+    maxDelay: 30000,
+    currentDelay: 1000,
+    maxRetries: 5,
+    attempts: 0,
+    jitter: 0.25,
+    jobStatus: 'InQueue'
   }
 
   await sendToQueue(QUEUE.MAIL_QUEUE, job);

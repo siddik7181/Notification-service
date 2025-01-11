@@ -4,7 +4,6 @@ import * as mailService from '../services/mailService'
 
 
 export const sendMail = async(req: Request, res: Response) => {
-    console.log('inside controller')
     try {
         const mail: Mail = req.body;
         await mailService.sendMail(mail);
