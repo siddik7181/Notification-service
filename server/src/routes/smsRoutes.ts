@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { validateSmsBody } from '../middlewares/bodyValidator';
+import { validateBody } from '../middlewares/bodyValidator';
 import { sendSms } from '../controllers/smsController';
+import { smsSchema } from '../schemas/smsSchema';
 
 const router: Router = Router();
 
-router.post('/', validateSmsBody, sendSms);
+router.post('/', validateBody(smsSchema), sendSms);
 
 export default router;

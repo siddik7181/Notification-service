@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { sendMail } from '../controllers/mailController';
-import { validateMailBody } from '../middlewares/bodyValidator';
+import { validateBody } from '../middlewares/bodyValidator';
+import { emailSchema } from '../schemas/emailSchema';
 
 const router: Router = Router();
 
-router.post('/', validateMailBody, sendMail);
+router.post('/', validateBody(emailSchema), sendMail);
 
 export default router;

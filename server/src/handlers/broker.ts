@@ -4,7 +4,7 @@ import { sendToQueue } from "./publisher";
 import QUEUE from ".";
 import { calcDelay, handleRequests } from "../utils/helper";
 import  RequestResponse from "../types/response";
-
+import { PROVIDERHOST } from "../config/secret";
 
 export const broker = async (type: string, job: Job) => {
 
@@ -18,7 +18,7 @@ export const broker = async (type: string, job: Job) => {
     const QUEUE_NAME: string = type === "sms" ? QUEUE.SMS_QUEUE : QUEUE.MAIL_QUEUE;
 
     const request: AxiosRequestConfig = {
-        baseURL: `http://notify-provider:${startPort + job.providerNumber + 1}/api/${type}`,
+        baseURL: `http://${PROVIDERHOST}:${startPort + job.providerNumber + 1}/api/${type}`,
         url: `/provider${job.providerNumber + 1}`,
         method: 'post',
         data: job.data

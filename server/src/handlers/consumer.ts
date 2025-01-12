@@ -3,8 +3,9 @@ import amqp from 'amqplib';
 import Job from "../types/job";
 import QUEUE from ".";
 import { broker } from './broker';
+import { RABBITMQURL } from '../config/secret';
 
-const RABBITMQ_URL = 'amqp://rabbitmq:5672';
+const RABBITMQ_URL = `amqp://${RABBITMQURL}`;
 
 
 const consume = async (queueName: string) => {

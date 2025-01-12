@@ -1,14 +1,13 @@
 import express, { Express, Request, Response } from "express";
 import cors from 'cors'
-import dotenv from "dotenv";
+
 import router from "./routes";
 
 import consumeQueue from "./handlers/consumer";
+import { PORT, SERVERHOST } from "./config/secret";
 
-dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT || 8080;
 
 app.use(cors())
 app.use(express.json());
@@ -19,7 +18,8 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Express + TypeScript Server');
 });
 
-app.listen(port, async () => {
-  console.log(`[server]: Server is running at http://notify-server:${port}`);
+app.listen(PORT, async () => {
+  console.log("PORT: ", PORT)
+  console.log(`[server]: Server is running at http://${SERVERHOST}:${PORT}`);
   await consumeQueue();
 });
