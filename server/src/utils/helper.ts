@@ -1,6 +1,9 @@
 import { AxiosRequestConfig } from "axios";
 import RequestResponse from "../types/response";
 import Circuit, { CircuitError } from "./breaker";
+import { Channel } from "amqplib";
+import amqp from "amqplib";
+
 
 export const calcDelay = (
   baseDelay: number,

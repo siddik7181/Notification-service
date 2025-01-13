@@ -41,8 +41,8 @@ services:
     depends_on:
       - rabbitmq
       - notify-provider
-    restart: always
-
+    restart: on-failure
+    
     networks:
       - notify
     environment:
