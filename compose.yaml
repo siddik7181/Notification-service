@@ -1,6 +1,6 @@
 services:
   rabbitmq:
-    image: rabbitmq:management-alpine
+    image: rabbitmq:management
     container_name: rabbitmq
     ports:
       - "5672:5672"
@@ -15,10 +15,16 @@ services:
       context: ./provider
       dockerfile: Dockerfile
     container_name: notify-provider
+    command: ["npx", "tsx", "server.ts"]
+    volumes:
+      - ./provider:/app/
     ports:
       - "8071:8071"
       - "8072:8072"
       - "8073:8073"
+      - "8091:8091"
+      - "8092:8092"
+      - "8093:8093"
     networks:
       - notify
 
@@ -27,13 +33,23 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: notify-server
+    command: ["yarn", "dev"]
+    volumes:
+      - ./server:/app/
     ports:
       - "8080:8080"
     depends_on:
-      - rabbitmq  
+      - rabbitmq
       - notify-provider
+    restart: always
+
     networks:
       - notify
+    environment:
+      - PORT=8080
+      - RABBITMQURL=rabbitmq
+      - SERVERHOST=notify-server
+      - PROVIDERHOST=notify-provider
 
 networks:
   notify:

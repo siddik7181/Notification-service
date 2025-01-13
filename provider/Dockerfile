@@ -5,10 +5,10 @@ WORKDIR /app
 
 COPY package.json ./
 
-RUN npm install
+RUN yarn
 
-COPY . .
+# COPY . .
 
-EXPOSE 8071 8072 8073 8091 8092 8093
+# EXPOSE 8071 8072 8073 8091 8092 8093
 
-CMD [ "npx", "tsx", "server.ts" ]
+# CMD [ "npx", "tsx", "server.ts" ]
