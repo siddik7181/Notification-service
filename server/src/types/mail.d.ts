@@ -1,8 +1,7 @@
-
 type Mail = {
-    subject: string;
-    body: string;
-    recipients: string[];
+  subject: string;
+  body: string;
+  recipients: string[];
 };
 
 export default Mail;
