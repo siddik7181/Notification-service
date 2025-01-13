@@ -23,21 +23,15 @@ const consume = async (queueName: string) => {
 
     channel.consume(
       QUEUE_NAME,
-      (msg) => {
+      async (msg) => {
         if (msg) {
           const messageContent = msg.content.toString();
           const job: Job = JSON.parse(messageContent);
 
           console.log("[Consumer]: Received mail message:", job);
-
-          // Simulate processing
-          setTimeout(async () => {
-            console.log(`[Consumer]: ${QUEUE_NAME} & ${type}`);
-            await broker(type, job);
-
-            console.log(`[${job.id}]: Message processed successfully`);
-            channel.ack(msg);
-          }, 1000);
+          await broker(type, job);
+          console.log(`[${job.id}]: Message processed successfully`);
+          channel.ack(msg);
         }
       },
       {
@@ -66,15 +60,7 @@ const consumeDLQ = async () => {
           const messageContent = msg.content.toString();
           const job: Job = JSON.parse(messageContent);
 
-          console.log("[Consumer]: Received mail message:", job);
-
-          // Simulate processing
-          setTimeout(async () => {
-            console.log(
-              `[${job.id}]: Message processed successfully in side DLQ!!!!`
-            );
-            channel.ack(msg);
-          }, 1000);
+          console.log("[Consumer]: Received job id DLQ:", job);
         }
       },
       {
