@@ -7,19 +7,11 @@ import { Provider } from "../../../utils/enums";
 export const callEmailProvider = async (provider: Provider, data: Mail) => {
   const config = emailConfig[provider];
   const endpoint = `http://${config.host}:${config.port}/api/${config.url}`;
-  try{
-    return await axios.post(endpoint, data);
-  }catch(error) {
-    throw error as AxiosError;
-  }
+  return await axios.post(endpoint, data);
 };
 
 export const callSmsProvider = async (provider: Provider, data: Sms) => {
   const config = smsConfig[provider];
   const endpoint = `http://${config.host}:${config.port}/api/${config.url}`;
-  try{
-    return await axios.post(endpoint, data);
-  }catch(error) {
-    throw error as AxiosError;
-  }
+  return await axios.post(endpoint, data);
 };
