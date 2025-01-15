@@ -1,17 +1,19 @@
 import { PROVIDERHOST } from "../../secret";
 
-const BaseService = (port: number, url: string) => {
+const BaseService = (url: string) => {
   return {
-    host: PROVIDERHOST,
-    port: port,
     url: url,
   }
 }
 
-export const emailServiceFirst = BaseService(8091, "email/provider1");
-export const emailServiceSecond = BaseService(8092, "email/provider2");
-export const emailServiceThird = BaseService(8093, "email/provider3");
+export const emailServiceFirst = BaseService(`http://${PROVIDERHOST}:8091/api/email/provider1`);
+export const emailServiceSecond = BaseService(`http://${PROVIDERHOST}:8092/api/email/provider2`);
+export const emailServiceThird = BaseService(`http://${PROVIDERHOST}:8093/api/email/provider3`);
 
-export const smsServiceFirst = BaseService(8071, "sms/provider1");
-export const smsServiceSecond = BaseService(8072, "sms/provider2");
-export const smsServiceThird = BaseService(8073, "sms/provider3");
+export const smsServiceFirst = BaseService(`http://${PROVIDERHOST}:8071/api/sms/provider1`);
+export const smsServiceSecond = BaseService(`http://${PROVIDERHOST}:8072/api/sms/provider2`);
+export const smsServiceThird = BaseService(`http://${PROVIDERHOST}:8073/api/sms/provider3`);
+
+
+
+
