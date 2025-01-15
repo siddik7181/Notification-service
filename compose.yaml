@@ -13,9 +13,8 @@ services:
   notify-provider:
     build:
       context: ./provider
-      dockerfile: Dockerfile
     container_name: notify-provider
-    command: ["npx", "tsx", "server.ts"]
+    command: "npx tsx server.ts"
     volumes:
       - ./provider:/app/
     ports:
@@ -31,17 +30,12 @@ services:
   notify-server:
     build:
       context: ./server
-      dockerfile: Dockerfile
     container_name: notify-server
-    command: ["yarn", "dev"]
+    command: "./wait-for-it.sh rabbitmq:5672 -- yarn dev"
     volumes:
       - ./server:/app/
     ports:
       - "8080:8080"
-    depends_on:
-      - rabbitmq
-      - notify-provider
-    restart: on-failure
     
     networks:
       - notify
