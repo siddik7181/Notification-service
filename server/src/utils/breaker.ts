@@ -9,6 +9,7 @@ type CircuitOptions = {
 export interface CircuitError extends Error {
   message: string;
   isRetryAble: boolean;
+  isCircuitError?: boolean;
 }
 
 export enum CircuitState {
@@ -30,9 +31,10 @@ export default class Circuit {
     this.timeout = options.timeout ?? 2000;
   }
 
-  private throwCircuitError(message: string, isRetryAble: boolean) {
+  private throwCircuitError(message: string, isRetryAble: boolean, isCircuitError?: boolean) {
     let error: CircuitError = new Error(message) as CircuitError;
     error.isRetryAble = isRetryAble;
+    if (isCircuitError)error.isCircuitError = isCircuitError;
     return error;
   }
 
@@ -108,7 +110,7 @@ export default class Circuit {
         }
 
       case CircuitState.OPEN:
-        throw this.throwCircuitError("Circuit is Open", true);
+        throw this.throwCircuitError("Circuit is Open", true, true);
     }
   }
   getState() {

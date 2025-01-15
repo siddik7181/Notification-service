@@ -14,7 +14,7 @@ const consume = async (QUEUE_NAME: string) => {
 
     await channel.assertQueue(QUEUE_NAME, { durable: true });
 
-    // channel.prefetch(1);
+    channel.prefetch(1);
 
     channel.consume(
       QUEUE_NAME,
@@ -64,6 +64,7 @@ const consumeDLQ = async () => {
 };
 
 const consumeQueue = async () => {
+  
   await consume(QUEUE.MAIL_QUEUE as string);
   await consume(QUEUE.SMS_QUEUE as string);
 
