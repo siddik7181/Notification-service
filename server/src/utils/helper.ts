@@ -1,11 +1,12 @@
 import RequestResponse from "../types/response";
 import Job from "../types/job";
-import { Provider } from "./enums";
+import { JobStatus, Provider } from "./enums";
 import Sms from "../types/sms";
 import Mail from "../types/mail";
 import { CircuitError } from "./breaker";
 import { handleEmailRequest } from "../config/thirdParty/provider/email";
 import { handleSmsRequest } from "../config/thirdParty/provider/sms";
+
 
 export const calcDelay = (
   baseDelay: number,
@@ -52,6 +53,7 @@ const makeRequest = async (type: string, provider: Provider,  data: Mail | Sms) 
   }
   await handleSmsRequest(provider, data as Sms);
 }
+
 
 
 

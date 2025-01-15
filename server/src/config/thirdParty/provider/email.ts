@@ -75,9 +75,6 @@ export class EmailProviderC implements BaseProvider {
         this.breaker = new Circuit({maxFailureAllowed: 5, timeout: 2000});
         this.used = 0;
     }
-    isProviderOpen(): boolean {
-        return this.breaker.getState() === CircuitState.OPEN;
-    }
     async call(data: Mail): Promise<void> {
         const request: AxiosRequestConfig = {
             url: this.url,
@@ -100,24 +97,17 @@ export class EmailProviderC implements BaseProvider {
 export const handleEmailRequest = async (provider: Provider, data: Mail) => {
     
     const emailProviderClass = chooseProvider(provider);
-    if (emailProviderClass.isProviderOpen()) {
-            throw ({
-              message: "EmailProvider Circuit Is Still Open!",
-              isRetryAble: true,
-              isCircuitError: true
-            });
-          }
     await emailProviderClass.call(data);
 }
 
 
 const chooseProvider = (provider: Provider) => {
     if (provider === Provider.First) {
-            return emailProviders.emailProviderA || new EmailProviderA();
+            return emailProviders.emailProviderA;
         }
         if (provider === Provider.Second) {
-            return emailProviders.emailProviderB || new EmailProviderB();
+            return emailProviders.emailProviderB;
         }
-        return emailProviders.emailProviderC || new EmailProviderC();
+        return emailProviders.emailProviderC;
 }
 
