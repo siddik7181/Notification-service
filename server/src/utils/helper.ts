@@ -1,9 +1,7 @@
-import { AxiosRequestConfig } from "axios";
 import RequestResponse from "../types/response";
 import Circuit, { CircuitError } from "./breaker";
-import { Channel } from "amqplib";
-import amqp from "amqplib";
-
+import Job from "../types/job";
+import { Provider } from "./enums";
 
 export const calcDelay = (
   baseDelay: number,
@@ -21,13 +19,13 @@ export const calcDelay = (
 };
 
 export const handleRequests = async (
-  request: AxiosRequestConfig
+  job: Job
 ): Promise<RequestResponse> => {
-  const circuit = new Circuit(request);
+  const circuit = new Circuit(job);
   try {
     await circuit.fire();
     console.log(
-      `[Request Succes By ${request.baseURL}${request.url}]: has processed`
+      `[Request Succes By Provider: ${job.currentProvider} has processed`
     );
     return {
       isRetryAble: false,
@@ -35,10 +33,17 @@ export const handleRequests = async (
     };
   } catch (e) {
     const error = e as CircuitError;
-    console.log(`[Handling Requests Error]: ${error.message}`);
+    console.log(`[Request Failed By Provider: ${job.currentProvider}: ${error.message}`);
     return {
       isRetryAble: error.isRetryAble,
       isClientError: !error.isRetryAble,
     };
   }
 };
+
+
+export const getNextNotificationProvider = (currentProvider: Provider): Provider => {
+  if(currentProvider === Provider.First)return Provider.Second;
+  else if(currentProvider === Provider.Second) return Provider.Third;
+  return Provider.First;
+}
