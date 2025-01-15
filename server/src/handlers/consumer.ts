@@ -7,14 +7,10 @@ import { RABBITMQURL } from "../config/secret";
 
 const RABBITMQ_URL = `amqp://${RABBITMQURL}`;
 
-const consume = async (queueName: string) => {
+const consume = async (QUEUE_NAME: string) => {
   try {
     const connection = await amqp.connect(RABBITMQ_URL);
     const channel = await connection.createChannel();
-
-    const QUEUE_NAME =
-      queueName === "mail" ? QUEUE.MAIL_QUEUE : QUEUE.SMS_QUEUE;
-    const type = queueName === "mail" ? "email" : "sms";
 
     await channel.assertQueue(QUEUE_NAME, { durable: true });
     console.log(`Waiting for messages in queue: ${QUEUE_NAME}`);
@@ -29,7 +25,7 @@ const consume = async (queueName: string) => {
           const job: Job = JSON.parse(messageContent);
 
           console.log("[Consumer]: Received mail message:", job);
-          await broker(type, job);
+          await broker(QUEUE_NAME, job);
           console.log(`[${job.id}]: Message processed successfully`);
           channel.ack(msg);
         }
@@ -73,8 +69,8 @@ const consumeDLQ = async () => {
 };
 
 const consumeQueue = async () => {
-  await consume("mail");
-  await consume("sms");
+  await consume(QUEUE.MAIL_QUEUE as string);
+  await consume(QUEUE.SMS_QUEUE as string);
 
   await consumeDLQ();
 };

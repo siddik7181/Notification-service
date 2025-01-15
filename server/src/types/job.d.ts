@@ -1,12 +1,13 @@
+import { JobStatus, Provider } from "../utils/enums";
 import Mail from "./mail";
 import Sms from "./sms";
 
 type Job = {
+  type: "email" | "sms";
   id: string;
   data: Mail | Sms;
-  providerNumber: number;
-  jobStatus: "InQueue" | "Running" | "ServerError" | "ClientError" | "Passed";
-
+  currentProvider: Provider;
+  jobStatus: JobStatus;
   baseDelay: number;
   maxDelay: number;
   currentDelay: number;

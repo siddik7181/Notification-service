@@ -5,6 +5,14 @@ import {
   isAxiosError,
 } from "axios";
 import { sendRequest } from "./requestHandler";
+import Job from "../types/job";
+import {
+  callEmailProvider,
+  callSmsProvider,
+} from "../config/thirdParty/notification/notifications";
+import { Provider } from "./enums";
+import Mail from "../types/mail";
+import Sms from "../types/sms";
 
 type CircuitOptions = {
   failureCount?: number;
@@ -24,15 +32,15 @@ enum CircuitState {
 }
 
 export default class Circuit {
-  private request: AxiosRequestConfig;
   private state: CircuitState = CircuitState.CLOSE;
   private timeout: number;
   private failureCount: number;
   private maxFailureAllowed: number;
   private timeoutId: NodeJS.Timeout | null = null;
+  private job: Job;
 
-  constructor(request: AxiosRequestConfig, options: CircuitOptions = {}) {
-    this.request = request;
+  constructor(job: Job, options: CircuitOptions = {}) {
+    this.job = job;
     this.failureCount = options.failureCount ?? 0;
     this.maxFailureAllowed = options.maxFailureAllowed ?? 3;
     this.timeout = options.timeout ?? 2000;
@@ -46,11 +54,16 @@ export default class Circuit {
 
   private async executeRequest() {
     try {
-      const response: AxiosResponse = await sendRequest(this.request);
+      const response =
+        this.job.type === "sms"
+          ? await callSmsProvider(this.job.currentProvider, this.job.data as Sms)
+          : await callEmailProvider(this.job.currentProvider, this.job.data as Mail);
       this.resetCircuit();
       return response;
     } catch (error) {
       let isRetryAble = false;
+      console.log(`inside circuit error for response!`)
+      console.log(error)
       if (isAxiosError(error) && this.isRetryableError(error)) {
         this.recordFailure();
         isRetryAble = true;
@@ -65,6 +78,7 @@ export default class Circuit {
 
   private isRetryableError(error: AxiosError) {
     const statusCode = error.response?.status;
+    console.log('Axios Status Code: ', statusCode);
     if (!statusCode) return false;
     return statusCode >= 500 || statusCode === 408 || statusCode === 429;
   }
