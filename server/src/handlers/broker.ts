@@ -3,19 +3,22 @@ import { sendToQueue } from "./publisher";
 import QUEUE from ".";
 import {
   calcDelay,
-  getNextNotificationProvider,
   handleRequests,
 } from "../utils/helper";
 import RequestResponse from "../types/response";
 import { JobStatus } from "../utils/enums";
+import { currentLessProvider, deallocateProvider } from "../config/thirdParty/provider";
 
 export const broker = async (QUEUE_NAME: string, job: Job) => {
-
+  // console.log("[broker]: come to me---> ", job);
   job.jobStatus = JobStatus.Running;
-  const { isRetryAble, isClientError }: RequestResponse = await handleRequests(
+  const { isRetryAble, isClientError, isCircuitError }: RequestResponse = await handleRequests(
     job
   );
-  job.attempts += 1;
+  if (!isCircuitError) {
+    job.attempts += 1;
+  }
+  deallocateProvider(job.type, job.currentProvider);
 
   if (!isRetryAble) {
     if (isClientError) {
@@ -24,24 +27,23 @@ export const broker = async (QUEUE_NAME: string, job: Job) => {
       job.jobStatus = JobStatus.Passed;
     }
     console.log(
-      `[Broker]: ${job.id}: Your Job Processed, waiting for new jobs..`
+      `[Broker]: ${job.id}: Your Job Processed with status: ${job.jobStatus}, waiting for new jobs..`
     );
     return;
   }
 
   if (job.attempts >= job.maxRetries) {
     job.jobStatus = JobStatus.ServerError;
-    console.log(`[Broker]: ${job.id} failed even after retrying...`);
     // add to the DQL queue again.
     await sendToQueue(QUEUE.DEAD_LETTER_QUEUE, job);
     return;
   }
 
   job.jobStatus = JobStatus.InQueue;
-  console.log(`Retry left: ${job.maxRetries - job.attempts}...`);
+  console.log(`[Broker]: Retry left for ${job.id}: ${job.maxRetries - job.attempts}...`);
 
   // change the providernumber..!!!
-  job.currentProvider = getNextNotificationProvider(job.currentProvider);
+  job.currentProvider = currentLessProvider(job.type);
 
   // add to the same queue again. in some time.
   const delayInMs: number = calcDelay(

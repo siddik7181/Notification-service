@@ -1,6 +1,7 @@
 type RequestResponse = {
   isRetryAble: boolean;
   isClientError: boolean;
+  isCircuitError?: boolean;
 };
 
 export type QueueStats = {
