@@ -75,9 +75,6 @@ export class SmsProviderC implements BaseProvider {
         this.breaker = new Circuit({maxFailureAllowed: 5, timeout: 2000});
         this.used = 0;
     }
-    isProviderOpen(): boolean {
-        return this.breaker.getState() === CircuitState.OPEN;
-    }
     async call(data: Sms): Promise<void> {
         const request: AxiosRequestConfig = {
             url: this.url,
@@ -101,23 +98,16 @@ export class SmsProviderC implements BaseProvider {
 
 export const handleSmsRequest = async (provider: Provider, data: Sms) => {
     const smsProviderClass = chooseProvider(provider);
-    if (smsProviderClass.isProviderOpen()) {
-            throw ({
-              message: "SmsProvider Circuit Is Still Open!",
-              isRetryAble: true,
-              isCircuitError: true,
-            });
-          }
     await smsProviderClass.call(data);
 }
 
 
 const chooseProvider = (provider: Provider) => {
     if (provider === Provider.First) {
-        return smsProviders.smsProviderA || new SmsProviderA();
+        return smsProviders.smsProviderA;
     }
     if (provider === Provider.Second) {
-        return smsProviders.smsProviderB || new SmsProviderB();
+        return smsProviders.smsProviderB;
     }
-    return smsProviders.smsProviderC || new SmsProviderC();
+    return smsProviders.smsProviderC;
 }

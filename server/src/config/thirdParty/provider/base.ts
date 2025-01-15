@@ -7,5 +7,4 @@ export interface BaseProvider {
     breaker?: Circuit;
     used: number;
     call(data: Mail | Sms): Promise<void>;
-    isProviderOpen(): boolean;
 }

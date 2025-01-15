@@ -28,27 +28,17 @@ export const initNotificationsProviders = () => {
 
 export const currentLessBusyEmailProvider = (): Provider => {
     let providerA: number = emailProviders.emailProviderA.getLoad() || 0;
-    if (emailProviders.emailProviderA.isProviderOpen())providerA = Number.MAX_VALUE;
-
     let providerB: number = emailProviders.emailProviderB.getLoad() || 0;
-    if (emailProviders.emailProviderB.isProviderOpen())providerB = Number.MAX_VALUE;
-
     let providerC: number = emailProviders.emailProviderC.getLoad() || 0;
-    if (emailProviders.emailProviderC.isProviderOpen())providerC = Number.MAX_VALUE;
 
     return chooseMinimum("email", providerA, providerB, providerC);
 }
 
 export const currentLessBusySmsProvider = (): Provider => {
     let providerA: number = smsProviders.smsProviderA.getLoad() || 0;
-    if (smsProviders.smsProviderA.isProviderOpen())providerA = Number.MAX_VALUE;
-    
     let providerB: number = smsProviders.smsProviderB.getLoad() || 0;
-    if (smsProviders.smsProviderB.isProviderOpen())providerB = Number.MAX_VALUE;
-    
     let providerC: number = smsProviders.smsProviderC.getLoad() || 0;
-    if (smsProviders.smsProviderC.isProviderOpen())providerC = Number.MAX_VALUE;
-
+    
     return chooseMinimum("sms", providerA, providerB, providerC);
 }
 
