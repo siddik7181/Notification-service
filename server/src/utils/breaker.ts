@@ -1,11 +1,4 @@
-import { AxiosError, isAxiosError } from "axios";
-import Job from "../types/job";
-import {
-  callEmailProvider,
-  callSmsProvider,
-} from "../config/thirdParty/notification/notifications";
-import Mail from "../types/mail";
-import Sms from "../types/sms";
+import axios, { AxiosError, AxiosRequestConfig, isAxiosError } from "axios";
 
 type CircuitOptions = {
   failureCount?: number;
@@ -18,7 +11,7 @@ export interface CircuitError extends Error {
   isRetryAble: boolean;
 }
 
-enum CircuitState {
+export enum CircuitState {
   CLOSE = "CLOSE",
   OPEN = "OPEN",
   HALF = "HALF",
@@ -30,10 +23,8 @@ export default class Circuit {
   private failureCount: number;
   private maxFailureAllowed: number;
   private timeoutId: NodeJS.Timeout | null = null;
-  private job: Job;
 
-  constructor(job: Job, options: CircuitOptions = {}) {
-    this.job = job;
+  constructor(options: CircuitOptions = {}) {
     this.failureCount = options.failureCount ?? 0;
     this.maxFailureAllowed = options.maxFailureAllowed ?? 3;
     this.timeout = options.timeout ?? 2000;
@@ -45,29 +36,18 @@ export default class Circuit {
     return error;
   }
 
-  private async executeRequest() {
+  private async executeRequest(config: AxiosRequestConfig) {
     try {
-      const response =
-        this.job.type === "sms"
-          ? await callSmsProvider(
-              this.job.currentProvider,
-              this.job.data as Sms
-            )
-          : await callEmailProvider(
-              this.job.currentProvider,
-              this.job.data as Mail
-            );
+      const response = await axios.request(config);
       this.resetCircuit();
       return response;
     } catch (error) {
       let isRetryAble = false;
-      console.log(`inside circuit error for response!`);
-      console.log(error);
       if (isAxiosError(error) && this.isRetryableError(error)) {
         this.recordFailure();
         isRetryAble = true;
       }
-
+      console.log(`[${config.url}], This Provider Failed : ${this.failureCount}`);
       throw this.throwCircuitError(
         `Request failed: ${(error as AxiosError).message}`,
         isRetryAble
@@ -77,7 +57,6 @@ export default class Circuit {
 
   private isRetryableError(error: AxiosError) {
     const statusCode = error.response?.status;
-    console.log("Axios Status Code: ", statusCode);
     if (!statusCode) return false;
     return statusCode >= 500 || statusCode === 408 || statusCode === 429;
   }
@@ -101,11 +80,6 @@ export default class Circuit {
   private openCircuit() {
     if (this.state !== CircuitState.OPEN) {
       this.state = CircuitState.OPEN;
-      console.log(
-        "Circuit is OPEN. Transitioning to HALF-OPEN in:",
-        this.timeout,
-        "ms"
-      );
 
       if (this.timeoutId) {
         clearTimeout(this.timeoutId);
@@ -114,19 +88,18 @@ export default class Circuit {
       this.timeoutId = setTimeout(() => {
         this.state = CircuitState.HALF;
         this.timeoutId = null;
-        console.log("Circuit transitioned to HALF-OPEN.");
       }, this.timeout);
     }
   }
 
-  async fire() {
+  async fire(request: AxiosRequestConfig) {
     switch (this.state) {
       case CircuitState.CLOSE:
-        return this.executeRequest();
+        return this.executeRequest(request);
 
       case CircuitState.HALF:
         try {
-          const response = await this.executeRequest();
+          const response = await this.executeRequest(request);
           this.resetCircuit();
           return response;
         } catch (error) {

@@ -14,11 +14,10 @@ export const sendMail = async (mail: Mail) => {
     baseDelay: 500,
     maxDelay: 30000,
     currentDelay: 500,
-    maxRetries: 5,
+    maxRetries: 10,
     attempts: 0,
     jitter: 0.25,
     jobStatus: JobStatus.InQueue,
   };
   await sendToQueue(QUEUE.MAIL_QUEUE, job);
-  console.log("[Service]: Requested mail sended to Queue!");
 };

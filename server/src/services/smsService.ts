@@ -14,12 +14,11 @@ export const sendSms = async (sms: Sms) => {
     baseDelay: 500,
     maxDelay: 30000,
     currentDelay: 500,
-    maxRetries: 5,
+    maxRetries: 10,
     attempts: 0,
     jitter: 0.25,
     jobStatus: JobStatus.InQueue,
   };
 
   await sendToQueue(QUEUE.SMS_QUEUE, job);
-  console.log("[Service]: Requested sms sended to Queue!");
 };

@@ -13,9 +13,8 @@ const consume = async (QUEUE_NAME: string) => {
     const channel = await connection.createChannel();
 
     await channel.assertQueue(QUEUE_NAME, { durable: true });
-    console.log(`Waiting for messages in queue: ${QUEUE_NAME}`);
 
-    channel.prefetch(1);
+    // channel.prefetch(1);
 
     channel.consume(
       QUEUE_NAME,
@@ -24,9 +23,7 @@ const consume = async (QUEUE_NAME: string) => {
           const messageContent = msg.content.toString();
           const job: Job = JSON.parse(messageContent);
 
-          console.log("[Consumer]: Received mail message:", job);
           await broker(QUEUE_NAME, job);
-          console.log(`[${job.id}]: Message processed successfully`);
           channel.ack(msg);
         }
       },
@@ -45,7 +42,6 @@ const consumeDLQ = async () => {
     const channel = await connection.createChannel();
 
     await channel.assertQueue(QUEUE.DEAD_LETTER_QUEUE, { durable: true });
-    console.log(`Waiting for messages in queue: ${QUEUE.DEAD_LETTER_QUEUE}`);
 
     channel.prefetch(1);
 
@@ -55,7 +51,6 @@ const consumeDLQ = async () => {
         if (msg) {
           const messageContent = msg.content.toString();
           const job: Job = JSON.parse(messageContent);
-
           console.log("[Consumer]: Received job id DLQ:", job);
         }
       },
@@ -72,7 +67,7 @@ const consumeQueue = async () => {
   await consume(QUEUE.MAIL_QUEUE as string);
   await consume(QUEUE.SMS_QUEUE as string);
 
-  await consumeDLQ();
+  // await consumeDLQ();
 };
 
 export default consumeQueue;
