@@ -18,8 +18,6 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.listen(PORT, async () => {
-  // await new Promise((resolve) => setTimeout(resolve, 3000));
-  console.log("PORT: ", PORT);
   console.log(`[server]: Server is running at http://${SERVERHOST}:${PORT}`);
   await consumeQueue();
 });

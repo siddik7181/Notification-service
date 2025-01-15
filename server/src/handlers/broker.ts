@@ -10,6 +10,7 @@ import RequestResponse from "../types/response";
 import { JobStatus } from "../utils/enums";
 
 export const broker = async (QUEUE_NAME: string, job: Job) => {
+
   job.jobStatus = JobStatus.Running;
   const { isRetryAble, isClientError }: RequestResponse = await handleRequests(
     job
@@ -38,7 +39,6 @@ export const broker = async (QUEUE_NAME: string, job: Job) => {
 
   job.jobStatus = JobStatus.InQueue;
   console.log(`Retry left: ${job.maxRetries - job.attempts}...`);
-  console.log("Job Can Be retryed!");
 
   // change the providernumber..!!!
   job.currentProvider = getNextNotificationProvider(job.currentProvider);

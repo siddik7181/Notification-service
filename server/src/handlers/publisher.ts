@@ -14,7 +14,6 @@ export const sendToQueue = async (queueName: string, message: Job) => {
     persistent: true,
   });
 
-  console.log(`[Publisher]: Job sent to ${queueName}:`, message);
   await channel.close();
   await connection.close();
 };

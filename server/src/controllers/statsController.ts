@@ -6,7 +6,6 @@ export const requestStats = async (req: Request, res: Response) => {
   try {
     const queueStats: QueueStats = await statsService.queueStats();
     res.send(queueStats);
-    console.log("[Stats-Controller]: Stats Sended");
     return;
   } catch (error) {
     console.error(`[Stats-Controller]: ${error}`);
