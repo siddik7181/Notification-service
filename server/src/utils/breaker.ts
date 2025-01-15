@@ -1,16 +1,9 @@
-import {
-  AxiosError,
-  AxiosRequestConfig,
-  AxiosResponse,
-  isAxiosError,
-} from "axios";
-import { sendRequest } from "./requestHandler";
+import { AxiosError, isAxiosError } from "axios";
 import Job from "../types/job";
 import {
   callEmailProvider,
   callSmsProvider,
 } from "../config/thirdParty/notification/notifications";
-import { Provider } from "./enums";
 import Mail from "../types/mail";
 import Sms from "../types/sms";
 
@@ -56,14 +49,20 @@ export default class Circuit {
     try {
       const response =
         this.job.type === "sms"
-          ? await callSmsProvider(this.job.currentProvider, this.job.data as Sms)
-          : await callEmailProvider(this.job.currentProvider, this.job.data as Mail);
+          ? await callSmsProvider(
+              this.job.currentProvider,
+              this.job.data as Sms
+            )
+          : await callEmailProvider(
+              this.job.currentProvider,
+              this.job.data as Mail
+            );
       this.resetCircuit();
       return response;
     } catch (error) {
       let isRetryAble = false;
-      console.log(`inside circuit error for response!`)
-      console.log(error)
+      console.log(`inside circuit error for response!`);
+      console.log(error);
       if (isAxiosError(error) && this.isRetryableError(error)) {
         this.recordFailure();
         isRetryAble = true;
@@ -78,7 +77,7 @@ export default class Circuit {
 
   private isRetryableError(error: AxiosError) {
     const statusCode = error.response?.status;
-    console.log('Axios Status Code: ', statusCode);
+    console.log("Axios Status Code: ", statusCode);
     if (!statusCode) return false;
     return statusCode >= 500 || statusCode === 408 || statusCode === 429;
   }

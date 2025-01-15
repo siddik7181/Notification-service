@@ -18,9 +18,7 @@ export const calcDelay = (
   return Math.min(exponentialDelay + jitter, maxDelay);
 };
 
-export const handleRequests = async (
-  job: Job
-): Promise<RequestResponse> => {
+export const handleRequests = async (job: Job): Promise<RequestResponse> => {
   const circuit = new Circuit(job);
   try {
     await circuit.fire();
@@ -33,7 +31,9 @@ export const handleRequests = async (
     };
   } catch (e) {
     const error = e as CircuitError;
-    console.log(`[Request Failed By Provider: ${job.currentProvider}: ${error.message}`);
+    console.log(
+      `[Request Failed By Provider: ${job.currentProvider}: ${error.message}`
+    );
     return {
       isRetryAble: error.isRetryAble,
       isClientError: !error.isRetryAble,
@@ -41,9 +41,10 @@ export const handleRequests = async (
   }
 };
 
-
-export const getNextNotificationProvider = (currentProvider: Provider): Provider => {
-  if(currentProvider === Provider.First)return Provider.Second;
-  else if(currentProvider === Provider.Second) return Provider.Third;
+export const getNextNotificationProvider = (
+  currentProvider: Provider
+): Provider => {
+  if (currentProvider === Provider.First) return Provider.Second;
+  else if (currentProvider === Provider.Second) return Provider.Third;
   return Provider.First;
-}
+};
