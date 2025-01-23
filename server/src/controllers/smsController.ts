@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Sms from "../types/sms";
 import * as smsService from "../services/smsService";
-
+// Test whether this controller works after validating reqest body.
 export const sendSms = async (req: Request, res: Response) => {
   try {
     const sms: Sms = req.body;

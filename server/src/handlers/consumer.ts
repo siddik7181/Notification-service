@@ -6,7 +6,7 @@ import { broker } from "./broker";
 import { RABBITMQURL } from "../config/secret";
 
 const RABBITMQ_URL = `amqp://${RABBITMQURL}`;
-
+// Test whether for specefic queue we read job in it.
 const consume = async (QUEUE_NAME: string) => {
   try {
     const connection = await amqp.connect(RABBITMQ_URL);

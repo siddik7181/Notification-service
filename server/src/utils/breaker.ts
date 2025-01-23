@@ -17,7 +17,7 @@ export enum CircuitState {
   OPEN = "OPEN",
   HALF = "HALF",
 }
-
+// Test Whether the Circuit class is implemented correctly and methods are working as expected
 export default class Circuit {
   private state: CircuitState = CircuitState.CLOSE;
   private timeout: number;
@@ -93,7 +93,7 @@ export default class Circuit {
       }, this.timeout);
     }
   }
-
+  // Test this method is implemented correctly!!.
   async fire(request: AxiosRequestConfig) {
     switch (this.state) {
       case CircuitState.CLOSE:

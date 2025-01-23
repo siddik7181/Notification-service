@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { currentLessBusyEmailProvider } from "../config/thirdParty/provider";
 import Job from "../types/job";
-import { randomDelayLessThenMs, randomLessThen1 } from "../utils/timer";
+import { randomDelayLessThenMs } from "../utils/timer";
 import { JobStatus } from "../utils/enums";
 import Mail from "../types/mail";
 import Sms from "../types/sms";
@@ -17,7 +17,7 @@ export const createNewJob = (type: "email" | "sms", data: Mail | Sms): Job => {
       currentDelay: randomDelayLessThenMs(500),
       maxRetries: randomDelayLessThenMs(10),
       attempts: 0,
-      jitter: randomLessThen1(),
+      jitter: Math.random(),
       jobStatus: JobStatus.InQueue,
     };
     return job;

@@ -61,7 +61,7 @@ const allocateSms = (provider: Provider):void => {
     else if (provider === Provider.Second)smsProviders.smsProviderB.allcate();
     else if (provider === Provider.Third)smsProviders.smsProviderC.allcate();
 }
-
+// Test Wheteher it returns the provider of either type with least requests
 export const currentLessProvider = (type: "email" | "sms"): Provider => {
   if (type === "email")return currentLessBusyEmailProvider();
   return currentLessBusySmsProvider();
@@ -77,7 +77,7 @@ const deallocateSms = (provider: Provider):void => {
     else if (provider === Provider.Second)smsProviders.smsProviderB.deallocate();
     else if (provider === Provider.Third)smsProviders.smsProviderC.deallocate();
 }
-
+// Test Whether specefic types of queue gets deallocated with request & provider
 export const deallocateProvider = (type: "email" | "sms", provider: Provider)=> {
     return type === "email" ? deallocateEmail(provider) : deallocateSms(provider);
 }

@@ -93,14 +93,14 @@ export class EmailProviderC implements BaseProvider {
         return this.used;
     }
 }
-
+// Test whether it handles the request & throw error if any.
 export const handleEmailRequest = async (provider: Provider, data: Mail) => {
     
     const emailProviderClass = chooseProvider(provider);
     await emailProviderClass.call(data);
 }
 
-
+// Test whether it choose the currect provider class
 const chooseProvider = (provider: Provider) => {
     if (provider === Provider.First) {
             return emailProviders.emailProviderA;

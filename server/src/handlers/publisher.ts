@@ -4,7 +4,7 @@ import Job from "../types/job";
 import amqp from "amqplib";
 
 const RABBITMQ_URL = `amqp://${RABBITMQURL}`;
-
+// Test whether sendToQueue is working fine for the given queue name & message
 export const sendToQueue = async (queueName: string, message: Job) => {
   const connection = await amqp.connect(RABBITMQ_URL);
   const channel = await connection.createChannel();
@@ -17,7 +17,7 @@ export const sendToQueue = async (queueName: string, message: Job) => {
   await channel.close();
   await connection.close();
 };
-
+// Test whether it returns the stats of mainQueue's & DLQ
 export const getQueuesMessageCount = async () => {
   const connection = await amqp.connect(RABBITMQ_URL);
   const channel = await connection.createChannel();

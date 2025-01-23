@@ -8,7 +8,7 @@ import {
 import RequestResponse from "../types/response";
 import { JobStatus } from "../utils/enums";
 import { currentLessProvider, deallocateProvider } from "../config/thirdParty/provider";
-
+// Test whether the broker can manage the jobs from queues in a least connection way.. also check every functionality like retry, allocating Provider & deallocateProvider works fine.
 export const broker = async (QUEUE_NAME: string, job: Job) => {
   // console.log("[broker]: come to me---> ", job);
   job.jobStatus = JobStatus.Running;

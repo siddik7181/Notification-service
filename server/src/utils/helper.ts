@@ -1,13 +1,13 @@
 import RequestResponse from "../types/response";
 import Job from "../types/job";
-import { JobStatus, Provider } from "./enums";
+import { Provider } from "./enums";
 import Sms from "../types/sms";
 import Mail from "../types/mail";
 import { CircuitError } from "./breaker";
 import { handleEmailRequest } from "../config/thirdParty/provider/email";
 import { handleSmsRequest } from "../config/thirdParty/provider/sms";
 
-
+// Test whether the function returns a valid delay
 export const calcDelay = (
   baseDelay: number,
   attempts: number,

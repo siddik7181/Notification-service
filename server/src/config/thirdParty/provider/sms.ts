@@ -95,13 +95,13 @@ export class SmsProviderC implements BaseProvider {
 }
 
 
-
+// Test whether it handles the request & throw error if any.
 export const handleSmsRequest = async (provider: Provider, data: Sms) => {
     const smsProviderClass = chooseProvider(provider);
     await smsProviderClass.call(data);
 }
 
-
+// Test whether it choose the currect provider class
 const chooseProvider = (provider: Provider) => {
     if (provider === Provider.First) {
         return smsProviders.smsProviderA;
