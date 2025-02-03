@@ -11,6 +11,7 @@ import { currentLessProvider, deallocateProvider } from "../config/thirdParty/pr
 // Test whether the broker can manage the jobs from queues in a least connection way.. also check every functionality like retry, allocating Provider & deallocateProvider works fine.
 export const broker = async (QUEUE_NAME: string, job: Job) => {
   // console.log("[broker]: come to me---> ", job);
+
   job.jobStatus = JobStatus.Running;
   const { isRetryAble, isClientError, isCircuitError }: RequestResponse = await handleRequests(
     job
@@ -43,7 +44,11 @@ export const broker = async (QUEUE_NAME: string, job: Job) => {
   console.log(`[Broker]: Retry left for ${job.id}: ${job.maxRetries - job.attempts}...`);
 
   // change the providernumber..!!!
+  // console.log(`Previous Provider: ${job.currentProvider}`)
+  // job.currentProvider = currentLessProvider(job.type);
   job.currentProvider = currentLessProvider(job.type);
+
+  // console.log(`New Provider After Failed: ${job.currentProvider}`)
 
   // add to the same queue again. in some time.
   const delayInMs: number = calcDelay(

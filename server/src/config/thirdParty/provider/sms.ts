@@ -4,7 +4,7 @@ import Sms from "../../../types/sms";
 import { Provider } from "../../../utils/enums";
 import Circuit, { CircuitState } from "../../../utils/breaker";
 import { PROVIDERHOST } from "../../secret";
-import { BaseProvider, Singleton } from "./base";
+import { BaseProvider, circuitOps, Singleton } from "./base";
 
 @Singleton
 export class SmsProviderA implements BaseProvider {
@@ -14,7 +14,7 @@ export class SmsProviderA implements BaseProvider {
   myProvider: Provider;
   constructor() {
     this.url = `http://${PROVIDERHOST}:8071/api/sms/provider1`;
-    this.breaker = new Circuit({ maxFailureAllowed: 5, timeout: 2000 });
+    this.breaker = new Circuit(circuitOps);
     this.used = 0;
     this.myProvider = Provider.First;
   }
@@ -47,7 +47,7 @@ export class SmsProviderB implements BaseProvider {
   myProvider: Provider;
   constructor() {
     this.url = `http://${PROVIDERHOST}:8072/api/sms/provider2`;
-    this.breaker = new Circuit({ maxFailureAllowed: 5, timeout: 2000 });
+    this.breaker = new Circuit(circuitOps);
     this.used = 0;
     this.myProvider = Provider.Second;
   }
@@ -80,7 +80,7 @@ export class SmsProviderC implements BaseProvider {
   myProvider: Provider;
   constructor() {
     this.url = `http://${PROVIDERHOST}:8073/api/sms/provider3`;
-    this.breaker = new Circuit({ maxFailureAllowed: 5, timeout: 2000 });
+    this.breaker = new Circuit(circuitOps);
     this.used = 0;
     this.myProvider = Provider.Third;
   }

@@ -4,7 +4,7 @@ import Mail from "../../../types/mail";
 import { Provider } from "../../../utils/enums";
 import Circuit, { CircuitState } from "../../../utils/breaker";
 import { PROVIDERHOST } from "../../secret";
-import { BaseProvider, Singleton } from "./base";
+import { BaseProvider, circuitOps, Singleton } from "./base";
 
 @Singleton
 export class EmailProviderA implements BaseProvider {
@@ -14,11 +14,11 @@ export class EmailProviderA implements BaseProvider {
   used: number;
   constructor() {
     this.url = `http://${PROVIDERHOST}:8091/api/email/provider1`;
-    this.breaker = new Circuit({ maxFailureAllowed: 3, timeout: 50000 });
+    this.breaker = new Circuit(circuitOps);
     this.used = 0;
     this.myProvider = Provider.First;
   }
-  
+
   isProviderOpen(): boolean {
     return this.breaker.getState() === CircuitState.OPEN;
   }
@@ -48,7 +48,7 @@ export class EmailProviderB implements BaseProvider {
   myProvider: Provider;
   constructor() {
     this.url = `http://${PROVIDERHOST}:8092/api/email/provider2`;
-    this.breaker = new Circuit({ maxFailureAllowed: 5, timeout: 2000 });
+    this.breaker = new Circuit(circuitOps);
     this.used = 0;
     this.myProvider = Provider.Second;
   }
@@ -81,7 +81,7 @@ export class EmailProviderC implements BaseProvider {
   myProvider: Provider;
   constructor() {
     this.url = `http://${PROVIDERHOST}:8093/api/email/provider3`;
-    this.breaker = new Circuit({ maxFailureAllowed: 5, timeout: 2000 });
+    this.breaker = new Circuit(circuitOps);
     this.used = 0;
     this.myProvider = Provider.Third;
   }

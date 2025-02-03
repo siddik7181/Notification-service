@@ -11,6 +11,11 @@ export interface BaseProvider {
   call(data: Mail | Sms): Promise<void>;
 }
 
+export const circuitOps = {
+  maxFailureAllowed: 3,
+  timeout: 3000,
+}
+
 export function Singleton<T extends { new (...args: any[]): {} }>(
   target: T
 ) {

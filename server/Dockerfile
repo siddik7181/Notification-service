@@ -3,6 +3,8 @@ FROM node:23-alpine
 
 WORKDIR /app
 
+RUN apk add --no-cache bash
+
 COPY package.json ./
 
 RUN yarn

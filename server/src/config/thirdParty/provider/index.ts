@@ -1,66 +1,44 @@
 
+import { CircuitState } from "../../../utils/breaker";
 import { Provider } from "../../../utils/enums";
 import { EmailProviderA, EmailProviderB, EmailProviderC } from "./email";
 import { SmsProviderA, SmsProviderB, SmsProviderC } from "./sms";
 
-
-export const smsProviders = {
-    smsProviderA: new SmsProviderA(),
-    smsProviderB: new SmsProviderB(),
-    smsProviderC: new SmsProviderC()
+const email = {
+    providerA: new EmailProviderA(),
+    providerB: new EmailProviderB(),
+    providerC: new EmailProviderC()
 }
-export const emailProviders = {
-    emailProviderA: new EmailProviderA(),
-    emailProviderB: new EmailProviderB(),
-    emailProviderC: new EmailProviderC(),
+const sms = {
+    providerA: new SmsProviderA(),
+    providerB: new SmsProviderB(),
+    providerC: new SmsProviderC()
 }
 
-export const initNotificationsProviders = () => {
-    console.log("Initializing Providers:...");
-    emailProviders.emailProviderA = new EmailProviderA();
-    emailProviders.emailProviderB = new EmailProviderB();
-    emailProviders.emailProviderC = new EmailProviderC();
-
-    smsProviders.smsProviderA = new SmsProviderA();
-    smsProviders.smsProviderB = new SmsProviderB();
-    smsProviders.smsProviderC = new SmsProviderC();
-}
 
 export const currentLessBusyEmailProvider = (): Provider => {
-    let providerA: number = emailProviders.emailProviderA.getLoad() || 0;
-    let providerB: number = emailProviders.emailProviderB.getLoad() || 0;
-    let providerC: number = emailProviders.emailProviderC.getLoad() || 0;
-
-    return chooseMinimum("email", providerA, providerB, providerC);
+    const providers = [email.providerA, email.providerB, email.providerC];
+    const sortedProviders = providers.sort((a, b) => a.getLoad() - b.getLoad());
+    for (let provider of sortedProviders) {
+        if (provider.breaker.getState() === CircuitState.CLOSE) {
+            provider.allcate();
+            return provider.myProvider;
+        }
+    }
+    return sortedProviders[0].myProvider;
 }
-
 export const currentLessBusySmsProvider = (): Provider => {
-    let providerA: number = smsProviders.smsProviderA.getLoad() || 0;
-    let providerB: number = smsProviders.smsProviderB.getLoad() || 0;
-    let providerC: number = smsProviders.smsProviderC.getLoad() || 0;
-    
-    return chooseMinimum("sms", providerA, providerB, providerC);
+    const providers = [sms.providerA, email.providerB, sms.providerC];
+    const sortedProviders = providers.sort((a, b) => a.getLoad() - b.getLoad());
+    for (let provider of sortedProviders) {
+        if (provider.breaker.getState() === CircuitState.CLOSE) {
+            provider.allcate();
+            return provider.myProvider;
+        }
+    }
+    return sortedProviders[0].myProvider;
 }
 
-const chooseMinimum = (type: "email" | "sms", a:number, b: number, c: number): Provider => {
-    const minUsed = Math.min(a, b, c);
-    console.log(`Count Of --> PROVIDER_A: ${a}, PROVIDER_B: ${b}, PROVIDER_C: ${c}`)
-    const result = minUsed === a ? Provider.First : minUsed === b ? Provider.Second : Provider.Third;
-    if (type === "email")allocateEmail(result);
-    else allocateSms(result);
-    return result;
-}
-
-const allocateEmail = (provider: Provider):void => {
-    if (provider === Provider.First)emailProviders.emailProviderA.allcate();
-    else if (provider === Provider.Second)emailProviders.emailProviderB.allcate();
-    else if (provider === Provider.Third)emailProviders.emailProviderC.allcate();
-}
-const allocateSms = (provider: Provider):void => {
-    if (provider === Provider.First)smsProviders.smsProviderA.allcate();
-    else if (provider === Provider.Second)smsProviders.smsProviderB.allcate();
-    else if (provider === Provider.Third)smsProviders.smsProviderC.allcate();
-}
 // Test Wheteher it returns the provider of either type with least requests
 export const currentLessProvider = (type: "email" | "sms"): Provider => {
   if (type === "email")return currentLessBusyEmailProvider();
@@ -68,14 +46,14 @@ export const currentLessProvider = (type: "email" | "sms"): Provider => {
 }
 
 const deallocateEmail = (provider: Provider):void => {
-    if (provider === Provider.First)emailProviders.emailProviderA.deallocate();
-    else if (provider === Provider.Second)emailProviders.emailProviderB.deallocate();
-    else if (provider === Provider.Third)emailProviders.emailProviderC.deallocate();
+    if (provider === Provider.First)email.providerA.deallocate();
+    else if (provider === Provider.Second)email.providerB.deallocate();
+    else if (provider === Provider.Third)email.providerC.deallocate();
 }
 const deallocateSms = (provider: Provider):void => {
-    if (provider === Provider.First)smsProviders.smsProviderA.deallocate();
-    else if (provider === Provider.Second)smsProviders.smsProviderB.deallocate();
-    else if (provider === Provider.Third)smsProviders.smsProviderC.deallocate();
+    if (provider === Provider.First)sms.providerA.deallocate();
+    else if (provider === Provider.Second)sms.providerB.deallocate();
+    else if (provider === Provider.Third)sms.providerC.deallocate();
 }
 // Test Whether specefic types of queue gets deallocated with request & provider
 export const deallocateProvider = (type: "email" | "sms", provider: Provider)=> {
